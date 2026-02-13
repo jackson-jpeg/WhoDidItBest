@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+@theme {
+  --color-cream: #F5F0E8;
+  --color-cream-dark: #E8E0D0;
+  --color-ink: #0D0D0D;
+  --color-ink-muted: #4A4A4A;
+  --color-ink-light: #8A8A8A;
+  --color-arena-red: #E63946;
+  --color-gold: #D4A017;
+  --color-bar-default: #2A2A2A;
+
+  --radius-xs: 0px;
+  --radius-sm: 0px;
+  --radius-md: 0px;
+  --radius-lg: 0px;
+  --radius-xl: 0px;
+  --radius-2xl: 0px;
+  --radius-3xl: 0px;
+  --radius-4xl: 0px;
+  --radius-full: 0px;
+  --radius-DEFAULT: 0px;
+
+  --shadow-card: 0 1px 3px rgba(13, 13, 13, 0.08), 0 1px 2px rgba(13, 13, 13, 0.06);
+  --shadow-card-hover: 0 4px 12px rgba(13, 13, 13, 0.12), 0 2px 4px rgba(13, 13, 13, 0.08);
+  --shadow-stamp: 2px 2px 0px rgba(230, 57, 70, 0.3);
+}
+
+@theme inline {
+  --font-headline: var(--font-headline);
+  --font-body: var(--font-body);
+  --font-ui: var(--font-ui);
+  --font-mono: var(--font-mono);
+}
+
+/* ── Base styles ── */
+
+*,
+*::before,
+*::after {
+  border-radius: 0 !important;
+}
+
+html {
+  font-family: var(--font-body), Georgia, "Times New Roman", serif;
+  color: var(--color-ink);
+  background-color: var(--color-cream);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  min-height: 100dvh;
+}
+
+/* Editorial typography scale */
+h1 {
+  font-family: var(--font-headline), Georgia, serif;
+  font-weight: 900;
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
+h2 {
+  font-family: var(--font-headline), Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(1.5rem, 3.5vw, 2.25rem);
+  line-height: 1.1;
+  letter-spacing: -0.01em;
+}
+
+h3 {
+  font-family: var(--font-headline), Georgia, serif;
+  font-weight: 700;
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  line-height: 1.15;
+}
+
+p {
+  font-size: clamp(1rem, 1.5vw, 1.125rem);
+  line-height: 1.65;
+}
+
+/* ── Custom utilities ── */
+
+.text-smallcaps {
+  font-family: var(--font-ui), sans-serif;
+  font-variant: small-caps;
+  text-transform: lowercase;
+  letter-spacing: 0.08em;
+  font-weight: 600;
+}
+
+.text-score {
+  font-family: var(--font-mono), monospace;
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.border-editorial {
+  border-width: 1px;
+  border-color: rgba(13, 13, 13, 0.15);
+}
+
+.font-headline {
+  font-family: var(--font-headline), Georgia, serif;
+}
+
+.font-ui {
+  font-family: var(--font-ui), sans-serif;
+}
+
+.font-mono {
+  font-family: var(--font-mono), monospace;
+}
