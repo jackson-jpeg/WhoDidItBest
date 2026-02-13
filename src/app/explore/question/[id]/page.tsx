@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Navbar } from "@/components/shared/Navbar";
@@ -8,6 +8,7 @@ import { Footer } from "@/components/shared/Footer";
 import { PageContainer } from "@/components/shared/PageContainer";
 import { ResultBar } from "@/components/vote/ResultBar";
 import { VerdictStamp } from "@/components/vote/VerdictStamp";
+import { ShareBar } from "@/components/vote/ShareBar";
 import { Badge } from "@/components/ui/Badge";
 import type { VoteResults } from "@/lib/types";
 
@@ -27,6 +28,14 @@ export default function QuestionDetailPage() {
   const [results, setResults] = useState<VoteResults | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const fetchResults = useCallback(async () => {
+    const res = await fetch(`/api/questions/${questionId}/results`);
+    if (res.ok) {
+      const data = await res.json();
+      setResults(data);
+    }
+  }, [questionId]);
 
   useEffect(() => {
     Promise.all([
@@ -49,9 +58,22 @@ export default function QuestionDetailPage() {
       .finally(() => setLoading(false));
   }, [questionId]);
 
+  // Poll for updated results every 10 seconds
+  useEffect(() => {
+    if (loading || error) return;
+    const interval = setInterval(fetchResults, 10000);
+    return () => clearInterval(interval);
+  }, [loading, error, fetchResults]);
+
   const winner = results?.results.reduce((a, b) =>
     a.voteCount > b.voteCount ? a : b
   );
+
+  const winnerPercentage = winner
+    ? results && results.totalVotes > 0
+      ? Math.round((winner.voteCount / results.totalVotes) * 100)
+      : 0
+    : 0;
 
   return (
     <>
@@ -124,6 +146,16 @@ export default function QuestionDetailPage() {
                     Vote on this question
                   </Link>
                 </div>
+
+                {/* Share */}
+                {winner && (
+                  <ShareBar
+                    questionId={questionId}
+                    prompt={question.prompt}
+                    winnerName={winner.name}
+                    winnerPercentage={winnerPercentage}
+                  />
+                )}
               </div>
             </div>
           </>

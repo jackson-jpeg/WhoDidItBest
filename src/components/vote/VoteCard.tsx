@@ -1,7 +1,9 @@
 "use client";
 
 import { motion, AnimatePresence } from "framer-motion";
+import { useCallback } from "react";
 import { useVoteCard } from "@/lib/hooks/useVoteCard";
+import { useKeyboardShortcuts } from "@/lib/hooks/useKeyboardShortcuts";
 import { OptionTile } from "./OptionTile";
 import { VSBadge } from "./VSBadge";
 import { ResultBar } from "./ResultBar";
@@ -32,6 +34,22 @@ export function VoteCard({ question, onNextQuestion, onSkip }: VoteCardProps) {
   const winner = results?.results.reduce((a, b) =>
     a.voteCount > b.voteCount ? a : b
   );
+
+  const handleVoteByIndex = useCallback(
+    (index: number) => {
+      if (state !== "idle" || index >= question.options.length) return;
+      handleVote(question.options[index].id);
+    },
+    [state, question.options, handleVote]
+  );
+
+  useKeyboardShortcuts({
+    onVote: !showResults ? handleVoteByIndex : undefined,
+    onSkip: !showResults && !isVoting ? onSkip : undefined,
+    onNext: state === "revealed" ? onNextQuestion : undefined,
+    optionCount: question.options.length,
+    enabled: true,
+  });
 
   return (
     <motion.div
@@ -125,6 +143,14 @@ export function VoteCard({ question, onNextQuestion, onSkip }: VoteCardProps) {
                   </button>
                 </div>
               )}
+
+              {/* Keyboard hints */}
+              {!isVoting && (
+                <p className="hidden md:block text-center text-[10px] text-ink-light/60 font-mono mt-4">
+                  {question.options.map((_, i) => `${i + 1}`).join(" / ")} to vote
+                  {onSkip ? " · S skip" : ""}
+                </p>
+              )}
             </motion.div>
           ) : (
             /* ── Results state ── */
@@ -170,6 +196,13 @@ export function VoteCard({ question, onNextQuestion, onSkip }: VoteCardProps) {
                     Next Matchup
                   </Button>
                 </motion.div>
+              )}
+
+              {/* Keyboard hint for next */}
+              {state === "revealed" && onNextQuestion && (
+                <p className="hidden md:block text-center text-[10px] text-ink-light/60 font-mono mt-3">
+                  N next matchup
+                </p>
               )}
 
               {/* Share bar */}

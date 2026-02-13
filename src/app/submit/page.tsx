@@ -5,6 +5,9 @@ import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
 import { PageContainer } from "@/components/shared/PageContainer";
 import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
+import { OptionTile } from "@/components/vote/OptionTile";
+import { VSBadge } from "@/components/vote/VSBadge";
 
 interface CategoryOption {
   name: string;
@@ -50,7 +53,6 @@ export default function SubmitPage() {
     e.preventDefault();
     setError(null);
 
-    const filledOptions = optionNames.filter((n) => n.trim().length > 0);
     if (!prompt.trim()) {
       setError("Write your question first!");
       return;
@@ -90,6 +92,9 @@ export default function SubmitPage() {
     }
   };
 
+  const selectedCategory = categories.find((c) => c.slug === categorySlug);
+  const filledOptions = optionNames.filter((n) => n.trim().length > 0);
+
   const resetForm = () => {
     setPrompt("");
     setSubtitle("");
@@ -124,6 +129,7 @@ export default function SubmitPage() {
             </Button>
           </div>
         ) : (
+          <>
           <form
             onSubmit={handleSubmit}
             className="border border-ink/10 bg-white"
@@ -229,6 +235,60 @@ export default function SubmitPage() {
               </Button>
             </div>
           </form>
+
+          {/* Live preview */}
+          {prompt.trim() && (
+            <div className="mt-8">
+              <h2 className="text-lg mb-3 border-b border-ink/10 pb-2">
+                Preview
+              </h2>
+              <div className="border border-ink/10 bg-white shadow-card opacity-90">
+                <div className="border-b border-ink/10 px-6 py-4">
+                  <div className="flex items-center gap-2 mb-3">
+                    <Badge variant="category">
+                      {selectedCategory?.iconEmoji}{" "}
+                      {selectedCategory?.name ?? "Category"}
+                    </Badge>
+                  </div>
+                  <h2 className="text-xl md:text-2xl">{prompt}</h2>
+                  {subtitle.trim() && (
+                    <p className="text-ink-muted text-sm mt-1">{subtitle}</p>
+                  )}
+                </div>
+                <div className="px-6 py-6">
+                  {filledOptions.length === 2 ? (
+                    <div className="space-y-0">
+                      <OptionTile
+                        option={{ id: "p1", name: filledOptions[0], sortOrder: 0 }}
+                        onSelect={() => {}}
+                        disabled
+                      />
+                      <div className="relative py-2">
+                        <VSBadge />
+                      </div>
+                      <OptionTile
+                        option={{ id: "p2", name: filledOptions[1], sortOrder: 1 }}
+                        onSelect={() => {}}
+                        disabled
+                      />
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      {filledOptions.map((name, i) => (
+                        <OptionTile
+                          key={i}
+                          option={{ id: `p${i}`, name, sortOrder: i }}
+                          onSelect={() => {}}
+                          disabled
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+          </>
         )}
       </PageContainer>
       <Footer />

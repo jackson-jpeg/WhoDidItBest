@@ -19,8 +19,16 @@ interface HistoryVote {
   votedAt: string;
 }
 
+interface Stats {
+  totalVotes: number;
+  favoriteCategory: string | null;
+  agreementRate: number;
+  questionsSkipped: number;
+}
+
 export default function HistoryPage() {
   const [votes, setVotes] = useState<HistoryVote[]>([]);
+  const [stats, setStats] = useState<Stats | null>(null);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -35,10 +43,14 @@ export default function HistoryPage() {
   }, []);
 
   useEffect(() => {
-    fetchHistory()
-      .then((data) => {
-        setVotes(data.votes);
-        setNextCursor(data.nextCursor);
+    Promise.all([
+      fetchHistory(),
+      fetch("/api/stats").then((r) => r.json()),
+    ])
+      .then(([historyData, statsData]) => {
+        setVotes(historyData.votes);
+        setNextCursor(historyData.nextCursor);
+        setStats(statsData);
       })
       .finally(() => setLoading(false));
   }, [fetchHistory]);
@@ -68,6 +80,7 @@ export default function HistoryPage() {
 
         {loading ? (
           <div className="space-y-3 animate-pulse">
+            <div className="h-24 bg-cream-dark" />
             {[...Array(3)].map((_, i) => (
               <div key={i} className="h-32 bg-cream-dark" />
             ))}
@@ -87,6 +100,46 @@ export default function HistoryPage() {
           </div>
         ) : (
           <>
+            {/* Stats banner */}
+            {stats && stats.totalVotes > 0 && (
+              <div className="border border-ink/10 bg-white mb-6">
+                <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-ink/10">
+                  <div className="px-4 py-4 text-center">
+                    <p className="font-mono text-2xl font-bold text-arena-red">
+                      {stats.totalVotes}
+                    </p>
+                    <p className="font-ui text-[10px] uppercase tracking-widest text-ink-muted mt-1">
+                      Votes Cast
+                    </p>
+                  </div>
+                  <div className="px-4 py-4 text-center">
+                    <p className="font-mono text-2xl font-bold">
+                      {stats.agreementRate}%
+                    </p>
+                    <p className="font-ui text-[10px] uppercase tracking-widest text-ink-muted mt-1">
+                      With Majority
+                    </p>
+                  </div>
+                  <div className="px-4 py-4 text-center">
+                    <p className="font-headline text-lg font-bold truncate px-1">
+                      {stats.favoriteCategory ?? "—"}
+                    </p>
+                    <p className="font-ui text-[10px] uppercase tracking-widest text-ink-muted mt-1">
+                      Top Category
+                    </p>
+                  </div>
+                  <div className="px-4 py-4 text-center">
+                    <p className="font-mono text-2xl font-bold text-ink-light">
+                      {stats.questionsSkipped}
+                    </p>
+                    <p className="font-ui text-[10px] uppercase tracking-widest text-ink-muted mt-1">
+                      Skipped
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
             <div className="space-y-3">
               {votes.map((vote) => (
                 <VoteHistoryCard key={vote.questionId} {...vote} />

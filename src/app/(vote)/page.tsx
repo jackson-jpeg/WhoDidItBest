@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { VoteCard } from "@/components/vote/VoteCard";
 import { VoteCardSkeleton } from "@/components/vote/VoteCardSkeleton";
+import { FeaturedBanner } from "@/components/vote/FeaturedBanner";
 import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
 import { PageContainer } from "@/components/shared/PageContainer";
@@ -84,6 +85,9 @@ export default function VoteFeedPage() {
             Tap to choose. See the verdict.
           </p>
         </div>
+
+        {/* Question of the Day */}
+        {!loading && !error && <FeaturedBanner />}
 
         {/* Vote card */}
         {loading ? (
