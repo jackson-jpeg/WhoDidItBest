@@ -1,12 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
 import { PageContainer } from "@/components/shared/PageContainer";
 import { RankingList } from "@/components/explore/RankingList";
+
+type SortOption = "votes" | "controversial" | "newest";
+
+const sortLabels: Record<SortOption, string> = {
+  votes: "Most Votes",
+  controversial: "Most Controversial",
+  newest: "Newest",
+};
 
 interface CategoryData {
   id: string;
@@ -31,28 +39,42 @@ export default function CategoryPage() {
   const [questions, setQuestions] = useState<CategoryQuestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [sort, setSort] = useState<SortOption>("votes");
 
-  useEffect(() => {
-    fetch(`/api/explore/${slug}`)
-      .then((r) => {
-        if (!r.ok) throw new Error("Category not found");
-        return r.json();
-      })
-      .then((data) => {
+  const fetchCategory = useCallback(
+    async (sortBy: SortOption) => {
+      setLoading(true);
+      setError(null);
+      try {
+        const res = await fetch(`/api/explore/${slug}?sort=${sortBy}`);
+        if (!res.ok) throw new Error("Category not found");
+        const data = await res.json();
         setCategory(data.category);
         setQuestions(data.questions);
-      })
-      .catch((err) =>
-        setError(err instanceof Error ? err.message : "Something went wrong")
-      )
-      .finally(() => setLoading(false));
-  }, [slug]);
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "Something went wrong");
+      } finally {
+        setLoading(false);
+      }
+    },
+    [slug]
+  );
+
+  useEffect(() => {
+    fetchCategory(sort);
+  }, [sort, fetchCategory]);
+
+  const handleSortChange = (newSort: SortOption) => {
+    if (newSort !== sort) {
+      setSort(newSort);
+    }
+  };
 
   return (
     <>
       <Navbar />
       <PageContainer>
-        {loading ? (
+        {loading && !category ? (
           <div className="animate-pulse space-y-4">
             <div className="h-10 w-1/3 bg-cream-dark" />
             <div className="h-6 w-2/3 bg-cream-dark" />
@@ -84,6 +106,23 @@ export default function CategoryPage() {
               {category.description && (
                 <p className="text-ink-muted mt-1">{category.description}</p>
               )}
+            </div>
+
+            {/* Sort controls */}
+            <div className="flex items-center gap-1 mb-4 border-b border-ink/10 pb-3">
+              {(Object.keys(sortLabels) as SortOption[]).map((key) => (
+                <button
+                  key={key}
+                  onClick={() => handleSortChange(key)}
+                  className={`font-ui text-xs uppercase tracking-widest px-3 py-1.5 transition-colors cursor-pointer ${
+                    sort === key
+                      ? "text-arena-red border border-arena-red/30 bg-arena-red/5"
+                      : "text-ink-muted hover:text-ink border border-transparent"
+                  }`}
+                >
+                  {sortLabels[key]}
+                </button>
+              ))}
             </div>
 
             <RankingList

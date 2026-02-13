@@ -6,11 +6,13 @@ import { OptionTile } from "./OptionTile";
 import { VSBadge } from "./VSBadge";
 import { ResultBar } from "./ResultBar";
 import { VerdictStamp } from "./VerdictStamp";
+import { ShareBar } from "./ShareBar";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import {
   resultContainerVariants,
   nextLinkVariants,
+  pageVariants,
 } from "@/lib/animations";
 import type { VotePrompt } from "@/lib/types";
 
@@ -32,7 +34,13 @@ export function VoteCard({ question, onNextQuestion, onSkip }: VoteCardProps) {
   );
 
   return (
-    <div className="border border-ink/10 bg-white shadow-card">
+    <motion.div
+      className="border border-ink/10 bg-white shadow-card"
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      exit="exit"
+    >
       {/* Header */}
       <div className="border-b border-ink/10 px-6 py-4">
         <div className="flex items-center gap-2 mb-3">
@@ -163,10 +171,20 @@ export function VoteCard({ question, onNextQuestion, onSkip }: VoteCardProps) {
                   </Button>
                 </motion.div>
               )}
+
+              {/* Share bar */}
+              {state === "revealed" && winner && (
+                <ShareBar
+                  questionId={question.id}
+                  prompt={question.prompt}
+                  winnerName={winner.name}
+                  winnerPercentage={winner.percentage}
+                />
+              )}
             </motion.div>
           )}
         </AnimatePresence>
       </div>
-    </div>
+    </motion.div>
   );
 }

@@ -4,11 +4,13 @@ import { categories, questions, options } from "@/lib/db/schema";
 import { eq, desc, sql } from "drizzle-orm";
 
 export async function GET(
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ category: string }> }
 ) {
   try {
     const { category: categorySlug } = await params;
+    const { searchParams } = new URL(request.url);
+    const sort = searchParams.get("sort") ?? "votes";
 
     // Find the category
     const categoryRows = await db
@@ -26,7 +28,23 @@ export async function GET(
 
     const category = categoryRows[0];
 
-    // Fetch questions in this category sorted by total votes
+    // Determine sort order
+    let orderByClause;
+    switch (sort) {
+      case "newest":
+        orderByClause = desc(questions.createdAt);
+        break;
+      case "controversial":
+        // Will sort in JS after fetching options
+        orderByClause = desc(questions.totalVotes);
+        break;
+      case "votes":
+      default:
+        orderByClause = desc(questions.totalVotes);
+        break;
+    }
+
+    // Fetch questions in this category
     const questionRows = await db
       .select({
         id: questions.id,
@@ -38,7 +56,7 @@ export async function GET(
       })
       .from(questions)
       .where(eq(questions.categoryId, category.id))
-      .orderBy(desc(questions.totalVotes));
+      .orderBy(orderByClause);
 
     // Fetch options for these questions
     const questionIds = questionRows.map((q) => q.id);
@@ -70,7 +88,7 @@ export async function GET(
       optionsByQ.set(o.questionId, arr);
     }
 
-    const questionsWithOptions = questionRows.map((q) => {
+    let questionsWithOptions = questionRows.map((q) => {
       const opts = (optionsByQ.get(q.id) ?? []).sort(
         (a, b) => b.voteCount - a.voteCount
       );
@@ -80,6 +98,15 @@ export async function GET(
         winner: opts[0] ?? null,
       };
     });
+
+    // For "controversial" sort: order by how close the top option is to 50%
+    if (sort === "controversial") {
+      questionsWithOptions.sort((a, b) => {
+        const aScore = controversyScore(a.options, a.totalVotes);
+        const bScore = controversyScore(b.options, b.totalVotes);
+        return bScore - aScore;
+      });
+    }
 
     return NextResponse.json({
       category: {
@@ -98,4 +125,15 @@ export async function GET(
       { status: 500 }
     );
   }
+}
+
+function controversyScore(
+  opts: { voteCount: number }[],
+  totalVotes: number
+): number {
+  if (totalVotes === 0 || opts.length === 0) return 0;
+  const topVoteCount = Math.max(...opts.map((o) => o.voteCount));
+  const topProportion = topVoteCount / totalVotes;
+  // 1.0 when perfectly split (50/50), 0.0 when unanimous
+  return 1 - Math.abs(0.5 - topProportion) * 2;
 }
