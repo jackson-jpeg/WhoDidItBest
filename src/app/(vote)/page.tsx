@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { VoteCard } from "@/components/vote/VoteCard";
 import { VoteCardSkeleton } from "@/components/vote/VoteCardSkeleton";
 import { Navbar } from "@/components/shared/Navbar";
@@ -98,43 +98,50 @@ export default function VoteFeedPage() {
               Try Again
             </button>
           </div>
-        ) : currentQuestion ? (
-          <AnimatePresence mode="wait">
-            <VoteCard
-              key={currentQuestion.id}
-              question={currentQuestion}
-              onNextQuestion={handleNext}
-              onSkip={handleSkip}
-            />
-          </AnimatePresence>
         ) : (
-          <div className="text-center py-16 border border-ink/10 bg-white px-6">
-            <h3 className="mb-2">All Caught Up</h3>
-            <p className="text-ink-muted text-sm mb-1">
-              You&apos;ve voted on {currentIndex} question{currentIndex !== 1 ? "s" : ""}. Nice work!
-            </p>
-            <p className="text-ink-muted text-sm mb-6">
-              Check back later for new matchups.
-            </p>
-            <div className="flex items-center justify-center gap-4">
-              <Link
-                href="/explore"
-                className="font-ui text-xs uppercase tracking-widest text-arena-red underline underline-offset-4"
+          <AnimatePresence mode="wait">
+            {currentQuestion ? (
+              <VoteCard
+                key={currentQuestion.id}
+                question={currentQuestion}
+                onNextQuestion={handleNext}
+                onSkip={handleSkip}
+              />
+            ) : (
+              <motion.div
+                key="caught-up"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1, transition: { duration: 0.3 } }}
+                className="text-center py-16 border border-ink/10 bg-white px-6"
               >
-                Browse all questions
-              </Link>
-              <Link
-                href="/submit"
-                className="font-ui text-xs uppercase tracking-widest text-arena-red underline underline-offset-4"
-              >
-                Submit your own
-              </Link>
-            </div>
-          </div>
+                <h3 className="mb-2">All Caught Up</h3>
+                <p className="text-ink-muted text-sm mb-1">
+                  You&apos;ve voted on {currentIndex} question{currentIndex !== 1 ? "s" : ""}. Nice work!
+                </p>
+                <p className="text-ink-muted text-sm mb-6">
+                  Check back later for new matchups.
+                </p>
+                <div className="flex items-center justify-center gap-4">
+                  <Link
+                    href="/explore"
+                    className="font-ui text-xs uppercase tracking-widest text-arena-red underline underline-offset-4"
+                  >
+                    Browse all questions
+                  </Link>
+                  <Link
+                    href="/submit"
+                    className="font-ui text-xs uppercase tracking-widest text-arena-red underline underline-offset-4"
+                  >
+                    Submit your own
+                  </Link>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         )}
 
         {/* Progress indicator */}
-        {!loading && questions.length > 0 && (
+        {!loading && currentQuestion && questions.length > 0 && (
           <p className="text-center text-xs text-ink-light font-mono mt-4">
             {currentIndex + 1} / {questions.length}
           </p>

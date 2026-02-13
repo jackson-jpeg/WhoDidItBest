@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Navbar } from "@/components/shared/Navbar";
@@ -40,21 +40,32 @@ export default function CategoryPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [sort, setSort] = useState<SortOption>("votes");
+  const abortRef = useRef<AbortController | null>(null);
 
   const fetchCategory = useCallback(
     async (sortBy: SortOption) => {
+      // Cancel any in-flight request
+      abortRef.current?.abort();
+      const controller = new AbortController();
+      abortRef.current = controller;
+
       setLoading(true);
       setError(null);
       try {
-        const res = await fetch(`/api/explore/${slug}?sort=${sortBy}`);
+        const res = await fetch(`/api/explore/${slug}?sort=${sortBy}`, {
+          signal: controller.signal,
+        });
         if (!res.ok) throw new Error("Category not found");
         const data = await res.json();
         setCategory(data.category);
         setQuestions(data.questions);
       } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
         setError(err instanceof Error ? err.message : "Something went wrong");
       } finally {
-        setLoading(false);
+        if (!controller.signal.aborted) {
+          setLoading(false);
+        }
       }
     },
     [slug]
@@ -62,6 +73,7 @@ export default function CategoryPage() {
 
   useEffect(() => {
     fetchCategory(sort);
+    return () => abortRef.current?.abort();
   }, [sort, fetchCategory]);
 
   const handleSortChange = (newSort: SortOption) => {

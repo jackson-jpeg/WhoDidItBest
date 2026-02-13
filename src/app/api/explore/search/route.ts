@@ -12,8 +12,9 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ questions: [] });
     }
 
-    // Search using ILIKE for simple full-text matching
-    const searchPattern = `%${query}%`;
+    // Escape ILIKE special characters before building pattern
+    const escaped = query.replace(/[%_\\]/g, (ch) => `\\${ch}`);
+    const searchPattern = `%${escaped}%`;
 
     const questionRows = await db
       .select({

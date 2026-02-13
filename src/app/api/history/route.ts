@@ -7,39 +7,46 @@ import {
   categories,
   votes,
 } from "@/lib/db/schema";
-import { eq, and, sql, desc, lt } from "drizzle-orm";
+import { eq, and, sql, desc } from "drizzle-orm";
 import { getSessionId } from "@/lib/session";
 
 export async function GET(request: NextRequest) {
   try {
     const sessionId = await getSessionId();
     const { searchParams } = new URL(request.url);
-    const cursor = searchParams.get("cursor");
+    const cursor = searchParams.get("cursor"); // format: "timestamp|id"
     const limit = 20;
 
+    // Parse composite cursor for deterministic pagination
+    let cursorCondition = undefined;
+    if (cursor) {
+      const [cursorTime, cursorId] = cursor.split("|");
+      // Rows that are strictly older, OR same timestamp but with a smaller id (deterministic tiebreaker)
+      cursorCondition = sql`(${impressions.createdAt} < ${new Date(cursorTime)} OR (${impressions.createdAt} = ${new Date(cursorTime)} AND ${impressions.id} < ${cursorId}))`;
+    }
+
     // Get voted impressions for this session
-    let query = db
+    const impressionRows = await db
       .select({
+        id: impressions.id,
         questionId: impressions.questionId,
         votedAt: impressions.createdAt,
       })
       .from(impressions)
       .where(
-        cursor
+        cursorCondition
           ? and(
               eq(impressions.sessionId, sessionId),
               eq(impressions.action, "voted"),
-              lt(impressions.createdAt, new Date(cursor))
+              cursorCondition
             )
           : and(
               eq(impressions.sessionId, sessionId),
               eq(impressions.action, "voted")
             )
       )
-      .orderBy(desc(impressions.createdAt))
+      .orderBy(desc(impressions.createdAt), desc(impressions.id))
       .limit(limit + 1);
-
-    const impressionRows = await query;
 
     const hasMore = impressionRows.length > limit;
     const rows = impressionRows.slice(0, limit);
@@ -141,8 +148,9 @@ export async function GET(request: NextRequest) {
       })
       .filter(Boolean);
 
+    const lastRow = rows[rows.length - 1];
     const nextCursor = hasMore
-      ? rows[rows.length - 1].votedAt.toISOString()
+      ? `${lastRow.votedAt.toISOString()}|${lastRow.id}`
       : null;
 
     return NextResponse.json({ votes: voteList, nextCursor });
