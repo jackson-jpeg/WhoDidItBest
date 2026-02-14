@@ -108,14 +108,29 @@ export default function ExplorePage() {
         </div>
 
         {/* Search bar */}
-        <div className="mb-8">
+        <div className="mb-8 relative">
+          <span className="absolute left-4 top-1/2 -translate-y-1/2 text-ink-light text-sm pointer-events-none">
+            &#128269;
+          </span>
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => handleSearchChange(e.target.value)}
             placeholder="Search questions..."
-            className="w-full border border-ink/15 bg-white px-4 py-3 font-ui text-sm text-ink placeholder:text-ink-light focus:outline-none focus:border-ink/30 transition-colors"
+            className="w-full border border-ink/15 bg-white pl-10 pr-4 py-3 font-ui text-sm text-ink placeholder:text-ink-light focus:outline-none focus:border-arena-red/50 transition-colors"
           />
+          {searchQuery && (
+            <button
+              onClick={() => {
+                setSearchQuery("");
+                setSearchResults([]);
+                setSearching(false);
+              }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 font-ui text-xs text-ink-light hover:text-ink transition-colors cursor-pointer"
+            >
+              &#10005;
+            </button>
+          )}
         </div>
 
         {loading ? (
@@ -132,9 +147,23 @@ export default function ExplorePage() {
                 : `${searchResults.length} result${searchResults.length !== 1 ? "s" : ""}`}
             </h2>
             {!searching && searchResults.length === 0 ? (
-              <p className="text-center text-ink-muted py-8">
-                No questions matching &ldquo;{searchQuery}&rdquo;
-              </p>
+              <div className="text-center py-12 border border-ink/10 bg-white">
+                <p className="font-headline text-lg font-bold mb-2">
+                  No matches for &ldquo;{searchQuery}&rdquo;
+                </p>
+                <p className="text-ink-muted text-sm mb-4">
+                  Try a different search, or browse by category below.
+                </p>
+                <button
+                  onClick={() => {
+                    setSearchQuery("");
+                    setSearchResults([]);
+                  }}
+                  className="font-ui text-xs uppercase tracking-widest text-arena-red underline underline-offset-4 cursor-pointer"
+                >
+                  Clear search
+                </button>
+              </div>
             ) : (
               <RankingList questions={searchResults} />
             )}

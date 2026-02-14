@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { questions, options, categories } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 import { getSessionId } from "@/lib/session";
+import { rateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
   try {
@@ -36,6 +37,15 @@ export async function POST(request: NextRequest) {
     }
 
     const sessionId = await getSessionId();
+
+    // Rate limit: 5 submissions per hour per session
+    const { allowed } = rateLimit(`submit:${sessionId}`, 5, 60 * 60 * 1000);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "Too many submissions. Try again in an hour." },
+        { status: 429 }
+      );
+    }
 
     // Verify category exists
     const categoryRows = await db

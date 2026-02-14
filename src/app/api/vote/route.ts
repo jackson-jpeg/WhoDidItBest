@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { votes, options, questions, impressions } from "@/lib/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { getSessionId } from "@/lib/session";
+import { rateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: NextRequest) {
   try {
@@ -17,6 +18,15 @@ export async function POST(request: NextRequest) {
     }
 
     const sessionId = await getSessionId();
+
+    // Rate limit: 60 votes per minute per session
+    const { allowed } = rateLimit(`vote:${sessionId}`, 60, 60_000);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "Slow down! Too many votes." },
+        { status: 429 }
+      );
+    }
 
     // Check for duplicate vote by session
     const existingVote = await db
