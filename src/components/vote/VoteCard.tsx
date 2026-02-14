@@ -192,23 +192,10 @@ export function VoteCard({ question, onNextQuestion, onSkip }: VoteCardProps) {
                 <ReactionBar questionId={question.id} />
               )}
 
-              {/* Make Your Case */}
-              {state === "revealed" && (
-                <MakeYourCase
-                  questionId={question.id}
-                  votedOptionId={selectedOptionId ?? undefined}
-                  votedOptionName={
-                    selectedOptionId
-                      ? question.options.find((o) => o.id === selectedOptionId)?.name
-                      : undefined
-                  }
-                />
-              )}
-
               {/* Next matchup */}
               {onNextQuestion && (
                 <motion.div
-                  className="mt-6 flex justify-center"
+                  className="mt-5 flex justify-center"
                   variants={nextLinkVariants}
                   initial="hidden"
                   animate="visible"
@@ -221,9 +208,22 @@ export function VoteCard({ question, onNextQuestion, onSkip }: VoteCardProps) {
 
               {/* Keyboard hint for next */}
               {state === "revealed" && onNextQuestion && (
-                <p className="hidden md:block text-center text-[10px] text-ink-light/60 font-mono mt-3">
+                <p className="hidden md:block text-center text-[10px] text-ink-light/60 font-mono mt-2">
                   N next matchup
                 </p>
+              )}
+
+              {/* Make Your Case */}
+              {state === "revealed" && (
+                <MakeYourCase
+                  questionId={question.id}
+                  votedOptionId={selectedOptionId ?? undefined}
+                  votedOptionName={
+                    selectedOptionId
+                      ? question.options.find((o) => o.id === selectedOptionId)?.name
+                      : undefined
+                  }
+                />
               )}
 
               {/* Similar questions */}
