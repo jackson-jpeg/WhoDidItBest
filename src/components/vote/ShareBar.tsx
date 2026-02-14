@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { motion } from "framer-motion";
 import { nextLinkVariants } from "@/lib/animations";
+import { useToast } from "@/components/ui/Toast";
 
 interface ShareBarProps {
   questionId: string;
@@ -21,8 +21,7 @@ export function ShareBar({
   votedOptionId,
   votedOptionName,
 }: ShareBarProps) {
-  const [copied, setCopied] = useState(false);
-  const [challengeCopied, setChallengeCopied] = useState(false);
+  const { toast } = useToast();
 
   const origin =
     typeof window !== "undefined" ? window.location.origin : "";
@@ -55,20 +54,32 @@ export function ShareBar({
 
   const handleCopyLink = async () => {
     await copyToClipboard(shareUrl);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    toast("Link copied!");
   };
 
   const handleCopyChallenge = async () => {
     await copyToClipboard(challengeUrl);
-    setChallengeCopied(true);
-    setTimeout(() => setChallengeCopied(false), 2000);
+    toast("Challenge link copied!");
   };
 
   const handleTwitterShare = () => {
     const url = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
       shareText
     )}&url=${encodeURIComponent(shareUrl)}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  const handleWhatsAppShare = () => {
+    const url = `https://wa.me/?text=${encodeURIComponent(
+      `${challengeText} ${challengeUrl}`
+    )}`;
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
+
+  const handleTelegramShare = () => {
+    const url = `https://t.me/share/url?url=${encodeURIComponent(
+      challengeUrl
+    )}&text=${encodeURIComponent(challengeText)}`;
     window.open(url, "_blank", "noopener,noreferrer");
   };
 
@@ -88,6 +99,11 @@ export function ShareBar({
     }
   };
 
+  const btnBase =
+    "font-ui text-xs uppercase tracking-widest border px-3 py-2 transition-colors cursor-pointer";
+  const btnSecondary =
+    `${btnBase} text-ink-muted hover:text-ink border-ink/15`;
+
   return (
     <motion.div
       className="mt-4"
@@ -99,29 +115,31 @@ export function ShareBar({
         {votedOptionId && (
           <button
             onClick={handleCopyChallenge}
-            className="font-ui text-xs uppercase tracking-widest text-cream bg-arena-red hover:bg-arena-red/90 border border-arena-red px-3 py-2 transition-colors cursor-pointer"
+            className={`${btnBase} text-cream bg-arena-red hover:bg-arena-red/90 border-arena-red`}
           >
-            {challengeCopied ? "Copied!" : "Challenge a Friend"}
+            Challenge a Friend
           </button>
         )}
 
-        <button
-          onClick={handleTwitterShare}
-          className="font-ui text-xs uppercase tracking-widest text-ink-muted hover:text-ink border border-ink/15 px-3 py-2 transition-colors cursor-pointer"
-        >
-          Share on X
+        <button onClick={handleTwitterShare} className={btnSecondary}>
+          X
         </button>
 
-        <button
-          onClick={handleCopyLink}
-          className="font-ui text-xs uppercase tracking-widest text-ink-muted hover:text-ink border border-ink/15 px-3 py-2 transition-colors cursor-pointer"
-        >
-          {copied ? "Copied!" : "Copy Link"}
+        <button onClick={handleWhatsAppShare} className={btnSecondary}>
+          WhatsApp
+        </button>
+
+        <button onClick={handleTelegramShare} className={btnSecondary}>
+          Telegram
+        </button>
+
+        <button onClick={handleCopyLink} className={btnSecondary}>
+          Copy Link
         </button>
 
         <button
           onClick={handleNativeShare}
-          className="font-ui text-xs uppercase tracking-widest text-ink-muted hover:text-ink border border-ink/15 px-3 py-2 transition-colors cursor-pointer md:hidden"
+          className={`${btnSecondary} md:hidden`}
         >
           Share
         </button>

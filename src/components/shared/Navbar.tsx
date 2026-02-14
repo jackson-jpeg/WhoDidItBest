@@ -8,6 +8,7 @@ import { StreakBadge } from "./StreakBadge";
 const navLinks = [
   { href: "/", label: "Vote" },
   { href: "/explore", label: "Explore" },
+  { href: "/leaderboard", label: "Ranks" },
   { href: "/history", label: "History" },
   { href: "/submit", label: "Submit" },
 ];

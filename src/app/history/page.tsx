@@ -26,9 +26,19 @@ interface Stats {
   questionsSkipped: number;
 }
 
+interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  emoji: string;
+  unlocked: boolean;
+  progress?: string;
+}
+
 export default function HistoryPage() {
   const [votes, setVotes] = useState<HistoryVote[]>([]);
   const [stats, setStats] = useState<Stats | null>(null);
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingMore, setLoadingMore] = useState(false);
@@ -46,11 +56,13 @@ export default function HistoryPage() {
     Promise.all([
       fetchHistory(),
       fetch("/api/stats").then((r) => r.json()),
+      fetch("/api/achievements").then((r) => r.json()),
     ])
-      .then(([historyData, statsData]) => {
+      .then(([historyData, statsData, achieveData]) => {
         setVotes(historyData.votes);
         setNextCursor(historyData.nextCursor);
         setStats(statsData);
+        setAchievements(achieveData.achievements ?? []);
       })
       .finally(() => setLoading(false));
   }, [fetchHistory]);
@@ -154,6 +166,45 @@ export default function HistoryPage() {
                       Skipped
                     </p>
                   </div>
+                </div>
+              </div>
+            )}
+
+            {/* Achievements */}
+            {achievements.length > 0 && (
+              <div className="border border-ink/10 bg-white mb-6 px-5 py-4">
+                <div className="flex items-center justify-between mb-3">
+                  <p className="font-ui text-[10px] uppercase tracking-[0.15em] text-ink-muted font-bold">
+                    Achievements
+                  </p>
+                  <p className="font-mono text-xs text-ink-light">
+                    {achievements.filter((a) => a.unlocked).length}/{achievements.length}
+                  </p>
+                </div>
+                <div className="grid grid-cols-3 md:grid-cols-4 gap-2">
+                  {achievements.map((a) => (
+                    <div
+                      key={a.id}
+                      className={`text-center px-2 py-3 border transition-colors ${
+                        a.unlocked
+                          ? "border-gold/30 bg-gold/5"
+                          : "border-ink/5 opacity-40"
+                      }`}
+                      title={a.description}
+                    >
+                      <div className={`text-2xl ${a.unlocked ? "" : "grayscale"}`}>
+                        {a.emoji}
+                      </div>
+                      <p className="font-ui text-[9px] uppercase tracking-wide mt-1 truncate">
+                        {a.name}
+                      </p>
+                      {a.progress && (
+                        <p className="font-mono text-[9px] text-ink-light mt-0.5">
+                          {a.progress}
+                        </p>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
             )}
