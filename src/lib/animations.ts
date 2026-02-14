@@ -8,8 +8,8 @@ export const barFillTransition: Transition = {
 
 export const stampTransition: Transition = {
   type: "spring",
-  stiffness: 500,
-  damping: 15,
+  stiffness: 600,
+  damping: 12,
 };
 
 export const resultContainerVariants: Variants = {
@@ -35,8 +35,8 @@ export const resultBarVariants: Variants = {
 
 export const stampVariants: Variants = {
   hidden: {
-    scale: 0,
-    rotate: 0,
+    scale: 3,
+    rotate: 12,
     opacity: 0,
   },
   visible: {

@@ -144,12 +144,6 @@ export default function VoteFeedPage() {
           </AnimatePresence>
         )}
 
-        {/* Progress indicator */}
-        {!loading && currentQuestion && questions.length > 0 && (
-          <p className="text-center text-xs text-ink-light font-mono mt-4">
-            {currentIndex + 1} / {questions.length}
-          </p>
-        )}
       </PageContainer>
       <Footer />
     </>

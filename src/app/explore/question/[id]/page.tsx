@@ -10,6 +10,7 @@ import { ResultBar } from "@/components/vote/ResultBar";
 import { VerdictStamp } from "@/components/vote/VerdictStamp";
 import { ShareBar } from "@/components/vote/ShareBar";
 import { ReactionBar } from "@/components/vote/ReactionBar";
+import { MakeYourCase } from "@/components/vote/MakeYourCase";
 import { Badge } from "@/components/ui/Badge";
 import type { VoteResults } from "@/lib/types";
 
@@ -140,6 +141,8 @@ export default function QuestionDetailPage() {
                 </p>
 
                 <ReactionBar questionId={questionId} />
+
+                <MakeYourCase questionId={questionId} />
 
                 <div className="mt-6 text-center">
                   <Link

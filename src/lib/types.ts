@@ -22,6 +22,7 @@ export interface VoteResult {
   optionId: string;
   name: string;
   subtitle?: string | null;
+  imageUrl?: string | null;
   voteCount: number;
   percentage: number;
   isWinner: boolean;

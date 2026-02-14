@@ -163,6 +163,51 @@ export const reactions = pgTable(
   ]
 );
 
+export const arguments_ = pgTable(
+  "arguments",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    questionId: uuid("question_id")
+      .notNull()
+      .references(() => questions.id),
+    optionId: uuid("option_id")
+      .notNull()
+      .references(() => options.id),
+    sessionId: text("session_id").notNull(),
+    body: text("body").notNull(), // max 280 chars enforced at API
+    upvotes: integer("upvotes").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("arguments_question_session_idx").on(
+      table.questionId,
+      table.sessionId
+    ),
+  ]
+);
+
+export const argumentUpvotes = pgTable(
+  "argument_upvotes",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    argumentId: uuid("argument_id")
+      .notNull()
+      .references(() => arguments_.id, { onDelete: "cascade" }),
+    sessionId: text("session_id").notNull(),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("argument_upvotes_argument_session_idx").on(
+      table.argumentId,
+      table.sessionId
+    ),
+  ]
+);
+
 export const verificationTokens = pgTable(
   "verification_tokens",
   {

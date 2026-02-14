@@ -10,6 +10,7 @@ import { ResultBar } from "./ResultBar";
 import { VerdictStamp } from "./VerdictStamp";
 import { ShareBar } from "./ShareBar";
 import { ReactionBar } from "./ReactionBar";
+import { MakeYourCase } from "./MakeYourCase";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import {
@@ -188,6 +189,19 @@ export function VoteCard({ question, onNextQuestion, onSkip }: VoteCardProps) {
               {/* Reactions */}
               {state === "revealed" && (
                 <ReactionBar questionId={question.id} />
+              )}
+
+              {/* Make Your Case */}
+              {state === "revealed" && (
+                <MakeYourCase
+                  questionId={question.id}
+                  votedOptionId={selectedOptionId ?? undefined}
+                  votedOptionName={
+                    selectedOptionId
+                      ? question.options.find((o) => o.id === selectedOptionId)?.name
+                      : undefined
+                  }
+                />
               )}
 
               {/* Next matchup */}
