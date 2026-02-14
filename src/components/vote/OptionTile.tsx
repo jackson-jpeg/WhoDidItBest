@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Image from "next/image";
 import type { VoteOption } from "@/lib/types";
 
@@ -10,11 +11,22 @@ interface OptionTileProps {
 }
 
 export function OptionTile({ option, onSelect, disabled }: OptionTileProps) {
+  const [selected, setSelected] = useState(false);
+
+  const handleClick = () => {
+    setSelected(true);
+    onSelect(option.id);
+  };
+
   return (
     <button
-      onClick={() => onSelect(option.id)}
+      onClick={handleClick}
       disabled={disabled}
-      className="w-full text-left border border-ink/10 p-6 transition-colors hover:bg-ink/[0.03] active:bg-ink/[0.06] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer group"
+      className={`w-full text-left border p-6 transition-all cursor-pointer group ${
+        selected
+          ? "border-arena-red bg-arena-red/5 shadow-[inset_0_0_0_1px_rgba(230,57,70,0.3)]"
+          : "border-ink/10 hover:bg-ink/[0.03] active:bg-ink/[0.06]"
+      } disabled:opacity-50 disabled:cursor-not-allowed`}
     >
       <div className="flex items-center gap-4">
         {option.imageUrl && (
@@ -28,8 +40,12 @@ export function OptionTile({ option, onSelect, disabled }: OptionTileProps) {
             />
           </div>
         )}
-        <div className="min-w-0">
-          <span className="block font-headline text-xl md:text-2xl font-bold group-hover:text-arena-red transition-colors">
+        <div className="min-w-0 flex-1">
+          <span
+            className={`block font-headline text-xl md:text-2xl font-bold transition-colors ${
+              selected ? "text-arena-red" : "group-hover:text-arena-red"
+            }`}
+          >
             {option.name}
           </span>
           {option.subtitle && (
@@ -38,6 +54,11 @@ export function OptionTile({ option, onSelect, disabled }: OptionTileProps) {
             </span>
           )}
         </div>
+        {selected && (
+          <span className="shrink-0 font-ui text-[10px] uppercase tracking-widest text-arena-red animate-pulse">
+            Locked In
+          </span>
+        )}
       </div>
     </button>
   );

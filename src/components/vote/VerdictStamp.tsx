@@ -1,7 +1,8 @@
 "use client";
 
+import { useMemo } from "react";
 import { motion } from "framer-motion";
-import { stampVariants } from "@/lib/animations";
+import { stampTransition } from "@/lib/animations";
 
 interface VerdictStampProps {
   winnerName: string;
@@ -9,12 +10,15 @@ interface VerdictStampProps {
 }
 
 export function VerdictStamp({ winnerName, className = "" }: VerdictStampProps) {
+  // Random rotation between -8 and -3 degrees for natural stamp feel
+  const finalRotation = useMemo(() => -3 - Math.random() * 5, []);
+
   return (
     <motion.div
       className={`inline-block ${className}`}
-      variants={stampVariants}
-      initial="hidden"
-      animate="visible"
+      initial={{ scale: 3, rotate: 12, opacity: 0 }}
+      animate={{ scale: 1, rotate: finalRotation, opacity: 1 }}
+      transition={stampTransition}
     >
       <div className="border-3 border-arena-red px-6 py-3 shadow-stamp select-none relative">
         <span className="font-ui text-[10px] uppercase tracking-[0.3em] text-arena-red block text-center">

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback } from "react";
+import { useAchievementCheck } from "./useAchievementCheck";
 import type { VoteCardState, VoteResults, VotePrompt } from "@/lib/types";
 
 interface UseVoteCardReturn {
@@ -17,6 +18,7 @@ export function useVoteCard(question: VotePrompt): UseVoteCardReturn {
   const [results, setResults] = useState<VoteResults | null>(null);
   const [selectedOptionId, setSelectedOptionId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { checkAchievements } = useAchievementCheck();
 
   const handleVote = useCallback(
     async (optionId: string) => {
@@ -45,6 +47,9 @@ export function useVoteCard(question: VotePrompt): UseVoteCardReturn {
         setResults(data);
         setState("revealing");
 
+        // Check for new achievement unlocks in the background
+        checkAchievements();
+
         // After reveal animation completes, move to revealed
         setTimeout(() => {
           setState("revealed");
@@ -55,7 +60,7 @@ export function useVoteCard(question: VotePrompt): UseVoteCardReturn {
         setSelectedOptionId(null);
       }
     },
-    [state, question.id]
+    [state, question.id, checkAchievements]
   );
 
   const reset = useCallback(() => {

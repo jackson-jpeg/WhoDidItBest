@@ -9,6 +9,7 @@ import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
 import { PageContainer } from "@/components/shared/PageContainer";
 import Link from "next/link";
+import { WelcomeOverlay } from "@/components/shared/WelcomeOverlay";
 import type { VotePrompt } from "@/lib/types";
 
 export default function VoteFeedPage() {
@@ -76,6 +77,7 @@ export default function VoteFeedPage() {
 
   return (
     <>
+      <WelcomeOverlay />
       <Navbar />
       <PageContainer>
         {/* Page header */}
@@ -114,29 +116,56 @@ export default function VoteFeedPage() {
             ) : (
               <motion.div
                 key="caught-up"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1, transition: { duration: 0.3 } }}
-                className="text-center py-16 border border-ink/10 bg-white px-6"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0, transition: { duration: 0.4 } }}
+                className="text-center border-2 border-arena-red/20 bg-white px-6 py-12"
               >
-                <h3 className="mb-2">All Caught Up</h3>
+                <div className="border-3 border-arena-red/30 inline-block px-6 py-3 mb-6 -rotate-3">
+                  <span className="font-ui text-[10px] uppercase tracking-[0.3em] text-arena-red block">
+                    Card Cleared
+                  </span>
+                  <span className="font-headline text-2xl font-black text-arena-red">
+                    Champion
+                  </span>
+                </div>
                 <p className="text-ink-muted text-sm mb-1">
-                  You&apos;ve voted on {currentIndex} question{currentIndex !== 1 ? "s" : ""}. Nice work!
+                  {currentIndex} matchup{currentIndex !== 1 ? "s" : ""} decided. The arena is empty&mdash;for now.
                 </p>
-                <p className="text-ink-muted text-sm mb-6">
-                  Check back later for new matchups.
+                <p className="text-ink-muted text-sm mb-8">
+                  New matchups are added daily. Come back tomorrow to keep your streak alive.
                 </p>
-                <div className="flex items-center justify-center gap-4">
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
                   <Link
                     href="/explore"
-                    className="font-ui text-xs uppercase tracking-widest text-arena-red underline underline-offset-4"
+                    className="font-ui text-sm uppercase tracking-wide bg-arena-red text-cream px-6 py-2.5 hover:bg-arena-red/90 transition-colors"
                   >
-                    Browse all questions
+                    Browse All Questions
                   </Link>
                   <Link
                     href="/submit"
-                    className="font-ui text-xs uppercase tracking-widest text-arena-red underline underline-offset-4"
+                    className="font-ui text-sm uppercase tracking-wide border border-ink/15 text-ink px-6 py-2.5 hover:bg-ink/[0.03] transition-colors"
                   >
-                    Submit your own
+                    Submit a Question
+                  </Link>
+                </div>
+                <div className="mt-6 flex items-center justify-center gap-4">
+                  <Link
+                    href="/leaderboard"
+                    className="font-ui text-xs uppercase tracking-widest text-ink-muted hover:text-arena-red transition-colors underline underline-offset-4"
+                  >
+                    Rankings
+                  </Link>
+                  <Link
+                    href="/pulse"
+                    className="font-ui text-xs uppercase tracking-widest text-ink-muted hover:text-arena-red transition-colors underline underline-offset-4"
+                  >
+                    The Pulse
+                  </Link>
+                  <Link
+                    href="/profile"
+                    className="font-ui text-xs uppercase tracking-widest text-ink-muted hover:text-arena-red transition-colors underline underline-offset-4"
+                  >
+                    Your Profile
                   </Link>
                 </div>
               </motion.div>
