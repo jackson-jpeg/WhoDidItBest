@@ -28,7 +28,7 @@ export function FeaturedBanner() {
 
   return (
     <Link
-      href={`/${featured.id}`}
+      href="/daily"
       className="block border border-gold/40 bg-white mb-6 hover:shadow-card-hover transition-shadow group"
     >
       <div className="px-5 py-4">

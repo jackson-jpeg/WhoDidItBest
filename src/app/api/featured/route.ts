@@ -90,10 +90,21 @@ export async function GET() {
       featured: {
         id: bestQ.id,
         prompt: bestQ.prompt,
+        subtitle: bestQ.subtitle,
         categoryName: bestQ.categoryName,
+        categorySlug: bestQ.categorySlug,
         totalVotes: bestQ.totalVotes,
         winnerName: winner?.name ?? null,
         winnerPercentage: winnerPct,
+        options: featuredOpts.map((o) => ({
+          name: o.name,
+          voteCount: o.voteCount,
+          percentage:
+            bestQ.totalVotes > 0
+              ? Math.round((o.voteCount / bestQ.totalVotes) * 100)
+              : 0,
+          isWinner: winner ? o.name === winner.name : false,
+        })),
       },
     });
   } catch (error) {

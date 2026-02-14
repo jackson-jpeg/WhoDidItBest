@@ -11,6 +11,7 @@ import { VerdictStamp } from "@/components/vote/VerdictStamp";
 import { ShareBar } from "@/components/vote/ShareBar";
 import { ReactionBar } from "@/components/vote/ReactionBar";
 import { MakeYourCase } from "@/components/vote/MakeYourCase";
+import { YouVsTheCrowd } from "@/components/vote/YouVsTheCrowd";
 import { Badge } from "@/components/ui/Badge";
 import type { VoteResults } from "@/lib/types";
 
@@ -139,6 +140,12 @@ export default function QuestionDetailPage() {
                 <p className="text-center text-xs text-ink-light font-mono mt-4">
                   {results.totalVotes.toLocaleString()} total votes
                 </p>
+
+                <YouVsTheCrowd
+                  questionId={questionId}
+                  results={results.results}
+                  totalVotes={results.totalVotes}
+                />
 
                 <ReactionBar questionId={questionId} />
 
