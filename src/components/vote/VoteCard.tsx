@@ -9,6 +9,7 @@ import { VSBadge } from "./VSBadge";
 import { ResultBar } from "./ResultBar";
 import { VerdictStamp } from "./VerdictStamp";
 import { ShareBar } from "./ShareBar";
+import { ReactionBar } from "./ReactionBar";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import {
@@ -184,6 +185,11 @@ export function VoteCard({ question, onNextQuestion, onSkip }: VoteCardProps) {
                 {results?.totalVotes.toLocaleString()} total votes
               </p>
 
+              {/* Reactions */}
+              {state === "revealed" && (
+                <ReactionBar questionId={question.id} />
+              )}
+
               {/* Next matchup */}
               {onNextQuestion && (
                 <motion.div
@@ -212,6 +218,12 @@ export function VoteCard({ question, onNextQuestion, onSkip }: VoteCardProps) {
                   prompt={question.prompt}
                   winnerName={winner.name}
                   winnerPercentage={winner.percentage}
+                  votedOptionId={selectedOptionId ?? undefined}
+                  votedOptionName={
+                    selectedOptionId
+                      ? question.options.find((o) => o.id === selectedOptionId)?.name
+                      : undefined
+                  }
                 />
               )}
             </motion.div>

@@ -100,6 +100,24 @@ export default function HistoryPage() {
           </div>
         ) : (
           <>
+            {/* Recap CTA */}
+            <Link
+              href="/recap"
+              className="block border border-gold/40 bg-white mb-4 px-5 py-4 hover:shadow-card-hover transition-shadow group"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-ui text-[10px] uppercase tracking-[0.15em] text-gold font-bold">
+                    Your Verdict
+                  </p>
+                  <p className="font-headline text-sm font-bold group-hover:text-arena-red transition-colors">
+                    Discover your voting personality &rarr;
+                  </p>
+                </div>
+                <span className="text-2xl">&#127942;</span>
+              </div>
+            </Link>
+
             {/* Stats banner */}
             {stats && stats.totalVotes > 0 && (
               <div className="border border-ink/10 bg-white mb-6">

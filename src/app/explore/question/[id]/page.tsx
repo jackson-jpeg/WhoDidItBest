@@ -9,6 +9,7 @@ import { PageContainer } from "@/components/shared/PageContainer";
 import { ResultBar } from "@/components/vote/ResultBar";
 import { VerdictStamp } from "@/components/vote/VerdictStamp";
 import { ShareBar } from "@/components/vote/ShareBar";
+import { ReactionBar } from "@/components/vote/ReactionBar";
 import { Badge } from "@/components/ui/Badge";
 import type { VoteResults } from "@/lib/types";
 
@@ -137,6 +138,8 @@ export default function QuestionDetailPage() {
                 <p className="text-center text-xs text-ink-light font-mono mt-4">
                   {results.totalVotes.toLocaleString()} total votes
                 </p>
+
+                <ReactionBar questionId={questionId} />
 
                 <div className="mt-6 text-center">
                   <Link

@@ -142,6 +142,27 @@ export const impressions = pgTable(
   ]
 );
 
+export const reactions = pgTable(
+  "reactions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    questionId: uuid("question_id")
+      .notNull()
+      .references(() => questions.id),
+    sessionId: text("session_id").notNull(),
+    emoji: text("emoji").notNull(), // "fire", "shocked", "fair", "wrong"
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    uniqueIndex("reactions_question_session_idx").on(
+      table.questionId,
+      table.sessionId
+    ),
+  ]
+);
+
 export const verificationTokens = pgTable(
   "verification_tokens",
   {

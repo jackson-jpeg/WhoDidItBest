@@ -9,6 +9,8 @@ interface ShareBarProps {
   prompt: string;
   winnerName: string;
   winnerPercentage: number;
+  votedOptionId?: string;
+  votedOptionName?: string;
 }
 
 export function ShareBar({
@@ -16,32 +18,51 @@ export function ShareBar({
   prompt,
   winnerName,
   winnerPercentage,
+  votedOptionId,
+  votedOptionName,
 }: ShareBarProps) {
   const [copied, setCopied] = useState(false);
+  const [challengeCopied, setChallengeCopied] = useState(false);
 
-  const shareUrl =
-    typeof window !== "undefined"
-      ? `${window.location.origin}/${questionId}`
-      : `/${questionId}`;
+  const origin =
+    typeof window !== "undefined" ? window.location.origin : "";
 
-  const shareText = `I voted on '${prompt}' — ${winnerName} is winning with ${winnerPercentage}%! Cast your vote:`;
+  const shareUrl = `${origin}/${questionId}`;
+  const challengeUrl = votedOptionId
+    ? `${origin}/${questionId}?challenge=${votedOptionId}`
+    : shareUrl;
 
-  const handleCopyLink = async () => {
+  const shareText = votedOptionName
+    ? `I picked ${votedOptionName} on "${prompt}" — ${winnerName} is winning with ${winnerPercentage}%. What's your pick?`
+    : `${winnerName} is winning "${prompt}" with ${winnerPercentage}%. Cast your vote:`;
+
+  const challengeText = votedOptionName
+    ? `I voted ${votedOptionName} on "${prompt}" — do you agree? 🤔`
+    : shareText;
+
+  const copyToClipboard = async (text: string) => {
     try {
-      await navigator.clipboard.writeText(shareUrl);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
+      await navigator.clipboard.writeText(text);
     } catch {
-      // Fallback for older browsers
       const input = document.createElement("input");
-      input.value = shareUrl;
+      input.value = text;
       document.body.appendChild(input);
       input.select();
       document.execCommand("copy");
       document.body.removeChild(input);
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
     }
+  };
+
+  const handleCopyLink = async () => {
+    await copyToClipboard(shareUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleCopyChallenge = async () => {
+    await copyToClipboard(challengeUrl);
+    setChallengeCopied(true);
+    setTimeout(() => setChallengeCopied(false), 2000);
   };
 
   const handleTwitterShare = () => {
@@ -56,45 +77,55 @@ export function ShareBar({
       try {
         await navigator.share({
           title: "Who Did It Best?",
-          text: shareText,
-          url: shareUrl,
+          text: challengeText,
+          url: challengeUrl,
         });
       } catch {
-        // User cancelled or share failed — ignore
+        // User cancelled — ignore
       }
     } else {
-      // Fallback to copy
       handleCopyLink();
     }
   };
 
   return (
     <motion.div
-      className="mt-4 flex items-center justify-center gap-3"
+      className="mt-4"
       variants={nextLinkVariants}
       initial="hidden"
       animate="visible"
     >
-      <button
-        onClick={handleCopyLink}
-        className="font-ui text-xs uppercase tracking-widest text-ink-muted hover:text-ink border border-ink/15 px-3 py-2 transition-colors cursor-pointer"
-      >
-        {copied ? "Copied!" : "Copy Link"}
-      </button>
+      <div className="flex items-center justify-center gap-2 flex-wrap">
+        {votedOptionId && (
+          <button
+            onClick={handleCopyChallenge}
+            className="font-ui text-xs uppercase tracking-widest text-cream bg-arena-red hover:bg-arena-red/90 border border-arena-red px-3 py-2 transition-colors cursor-pointer"
+          >
+            {challengeCopied ? "Copied!" : "Challenge a Friend"}
+          </button>
+        )}
 
-      <button
-        onClick={handleTwitterShare}
-        className="font-ui text-xs uppercase tracking-widest text-ink-muted hover:text-ink border border-ink/15 px-3 py-2 transition-colors cursor-pointer"
-      >
-        Share on X
-      </button>
+        <button
+          onClick={handleTwitterShare}
+          className="font-ui text-xs uppercase tracking-widest text-ink-muted hover:text-ink border border-ink/15 px-3 py-2 transition-colors cursor-pointer"
+        >
+          Share on X
+        </button>
 
-      <button
-        onClick={handleNativeShare}
-        className="font-ui text-xs uppercase tracking-widest text-ink-muted hover:text-ink border border-ink/15 px-3 py-2 transition-colors cursor-pointer"
-      >
-        Share
-      </button>
+        <button
+          onClick={handleCopyLink}
+          className="font-ui text-xs uppercase tracking-widest text-ink-muted hover:text-ink border border-ink/15 px-3 py-2 transition-colors cursor-pointer"
+        >
+          {copied ? "Copied!" : "Copy Link"}
+        </button>
+
+        <button
+          onClick={handleNativeShare}
+          className="font-ui text-xs uppercase tracking-widest text-ink-muted hover:text-ink border border-ink/15 px-3 py-2 transition-colors cursor-pointer md:hidden"
+        >
+          Share
+        </button>
+      </div>
     </motion.div>
   );
 }

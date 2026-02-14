@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useParams, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { VoteCard } from "@/components/vote/VoteCard";
 import { VoteCardSkeleton } from "@/components/vote/VoteCardSkeleton";
@@ -21,9 +21,13 @@ interface RelatedQuestion {
 
 export default function QuestionPage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const questionId = params.questionId as string;
+  const challengeOptionId = searchParams.get("challenge");
+
   const [question, setQuestion] = useState<VotePrompt | null>(null);
   const [related, setRelated] = useState<RelatedQuestion[]>([]);
+  const [challengeOptionName, setChallengeOptionName] = useState<string | null>(null);
   const [hasVoted, setHasVoted] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -39,6 +43,14 @@ export default function QuestionPage() {
         const data = await res.json();
         setQuestion(data);
 
+        // Resolve challenge option name
+        if (challengeOptionId && data.options) {
+          const opt = data.options.find(
+            (o: { id: string }) => o.id === challengeOptionId
+          );
+          if (opt) setChallengeOptionName(opt.name);
+        }
+
         // Fetch related questions from same category
         if (data.categorySlug) {
           fetch(`/api/explore/${data.categorySlug}`)
@@ -49,7 +61,7 @@ export default function QuestionPage() {
                 .slice(0, 3);
               setRelated(others);
             })
-            .catch(() => {}); // non-critical
+            .catch(() => {});
         }
       } catch (err) {
         setError(
@@ -61,11 +73,8 @@ export default function QuestionPage() {
     }
 
     fetchQuestion();
-  }, [questionId]);
+  }, [questionId, challengeOptionId]);
 
-  // Detect when the user votes (VoteCard transitions to revealed)
-  // We observe this via a MutationObserver-free approach:
-  // wrap onNextQuestion to set hasVoted
   const handlePostVote = () => {
     setHasVoted(true);
   };
@@ -83,6 +92,18 @@ export default function QuestionPage() {
           </div>
         ) : question ? (
           <>
+            {/* Challenge banner */}
+            {challengeOptionName && !hasVoted && (
+              <div className="border border-arena-red/30 bg-arena-red/5 px-5 py-4 mb-4 text-center">
+                <p className="font-ui text-sm uppercase tracking-wide text-arena-red font-semibold">
+                  Your friend picked {challengeOptionName}
+                </p>
+                <p className="text-ink-muted text-xs mt-1">
+                  Do you agree? Cast your vote below.
+                </p>
+              </div>
+            )}
+
             <VoteCard
               question={question}
               onNextQuestion={handlePostVote}
