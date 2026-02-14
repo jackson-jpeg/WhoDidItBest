@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import { Navbar } from "@/components/shared/Navbar";
 import { Footer } from "@/components/shared/Footer";
 import { PageContainer } from "@/components/shared/PageContainer";
@@ -8,11 +9,21 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { OptionTile } from "@/components/vote/OptionTile";
 import { VSBadge } from "@/components/vote/VSBadge";
+import { timeAgo } from "@/lib/utils";
 
 interface CategoryOption {
   name: string;
   slug: string;
   iconEmoji: string | null;
+}
+
+interface Submission {
+  id: string;
+  prompt: string;
+  status: string;
+  totalVotes: number;
+  categoryName: string;
+  createdAt: string;
 }
 
 export default function SubmitPage() {
@@ -24,11 +35,16 @@ export default function SubmitPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [mySubmissions, setMySubmissions] = useState<Submission[]>([]);
 
   useEffect(() => {
     fetch("/api/explore/categories")
       .then((r) => r.json())
       .then((data) => setCategories(data.categories ?? []));
+    fetch("/api/my-submissions")
+      .then((r) => r.json())
+      .then((data) => setMySubmissions(data.submissions ?? []))
+      .catch(() => {});
   }, []);
 
   const addOption = () => {
@@ -289,6 +305,68 @@ export default function SubmitPage() {
             </div>
           )}
           </>
+        )}
+
+        {/* My submissions tracker */}
+        {mySubmissions.length > 0 && (
+          <div className="mt-10">
+            <h2 className="text-lg mb-3 border-b border-ink/10 pb-2">
+              Your Submissions
+            </h2>
+            <div className="divide-y divide-ink/10 border border-ink/10 bg-white">
+              {mySubmissions.map((sub) => {
+                const statusLabel =
+                  sub.status === "active"
+                    ? "Live"
+                    : sub.status === "draft"
+                    ? "In Review"
+                    : "Archived";
+                const statusColor =
+                  sub.status === "active"
+                    ? "text-green-700 bg-green-50 border-green-200"
+                    : sub.status === "draft"
+                    ? "text-gold bg-gold/5 border-gold/30"
+                    : "text-ink-light bg-cream-dark border-ink/10";
+
+                return (
+                  <div key={sub.id} className="px-4 py-3 flex items-center gap-3">
+                    <div className="flex-1 min-w-0">
+                      {sub.status === "active" ? (
+                        <Link
+                          href={`/explore/question/${sub.id}`}
+                          className="font-headline text-sm font-bold hover:text-arena-red transition-colors truncate block"
+                        >
+                          {sub.prompt}
+                        </Link>
+                      ) : (
+                        <p className="font-headline text-sm font-bold truncate">
+                          {sub.prompt}
+                        </p>
+                      )}
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="font-ui text-[9px] text-ink-muted">
+                          {sub.categoryName}
+                        </span>
+                        <span className="font-mono text-[9px] text-ink-light">
+                          {timeAgo(new Date(sub.createdAt))}
+                        </span>
+                      </div>
+                    </div>
+                    <span
+                      className={`shrink-0 font-ui text-[9px] uppercase tracking-widest px-2 py-0.5 border ${statusColor}`}
+                    >
+                      {statusLabel}
+                    </span>
+                    {sub.status === "active" && sub.totalVotes > 0 && (
+                      <span className="shrink-0 font-mono text-xs text-ink-light">
+                        {sub.totalVotes} votes
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         )}
       </PageContainer>
       <Footer />
