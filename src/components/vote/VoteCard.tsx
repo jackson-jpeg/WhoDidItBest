@@ -11,6 +11,7 @@ import { VerdictStamp } from "./VerdictStamp";
 import { ShareBar } from "./ShareBar";
 import { ReactionBar } from "./ReactionBar";
 import { MakeYourCase } from "./MakeYourCase";
+import { SimilarQuestions } from "./SimilarQuestions";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import {
@@ -223,6 +224,11 @@ export function VoteCard({ question, onNextQuestion, onSkip }: VoteCardProps) {
                 <p className="hidden md:block text-center text-[10px] text-ink-light/60 font-mono mt-3">
                   N next matchup
                 </p>
+              )}
+
+              {/* Similar questions */}
+              {state === "revealed" && (
+                <SimilarQuestions questionId={question.id} />
               )}
 
               {/* Share bar */}

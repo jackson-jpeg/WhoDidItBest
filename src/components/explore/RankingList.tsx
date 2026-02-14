@@ -21,6 +21,33 @@ interface RankingListProps {
   basePath?: string;
 }
 
+function getHeatBadge(
+  totalVotes: number,
+  options: RankingOption[]
+): { label: string; className: string } | null {
+  // Controversial: close to 50/50 with enough votes
+  if (totalVotes >= 10 && options.length >= 2) {
+    const top = Math.max(...options.map((o) => o.voteCount));
+    const topPct = top / totalVotes;
+    if (topPct <= 0.55 && topPct >= 0.45) {
+      return {
+        label: "Controversial",
+        className: "text-gold bg-gold/10 border-gold/30",
+      };
+    }
+  }
+
+  // Hot: lots of votes
+  if (totalVotes >= 50) {
+    return {
+      label: "Hot",
+      className: "text-arena-red bg-arena-red/10 border-arena-red/30",
+    };
+  }
+
+  return null;
+}
+
 export function RankingList({ questions, basePath = "" }: RankingListProps) {
   if (questions.length === 0) {
     return (
@@ -36,6 +63,7 @@ export function RankingList({ questions, basePath = "" }: RankingListProps) {
           q.totalVotes > 0
             ? Math.round(((winner?.voteCount ?? 0) / q.totalVotes) * 100)
             : 0;
+        const badge = getHeatBadge(q.totalVotes, q.options);
 
         return (
           <Link
@@ -54,9 +82,18 @@ export function RankingList({ questions, basePath = "" }: RankingListProps) {
 
             {/* Question info */}
             <div className="flex-1 min-w-0">
-              <p className="font-headline text-sm font-bold truncate group-hover:text-arena-red transition-colors">
-                {q.prompt}
-              </p>
+              <div className="flex items-center gap-2">
+                <p className="font-headline text-sm font-bold truncate group-hover:text-arena-red transition-colors">
+                  {q.prompt}
+                </p>
+                {badge && (
+                  <span
+                    className={`shrink-0 font-ui text-[8px] uppercase tracking-widest px-1.5 py-0.5 border ${badge.className}`}
+                  >
+                    {badge.label}
+                  </span>
+                )}
+              </div>
               <div className="flex items-center gap-3 mt-1">
                 {winner && (
                   <span className="text-xs text-ink-muted font-ui truncate">

@@ -115,3 +115,14 @@ p {
 .font-mono {
   font-family: var(--font-mono), monospace;
 }
+
+/* ── Animations ── */
+
+@keyframes scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}

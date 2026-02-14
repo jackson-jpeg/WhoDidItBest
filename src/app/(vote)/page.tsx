@@ -10,6 +10,7 @@ import { Footer } from "@/components/shared/Footer";
 import { PageContainer } from "@/components/shared/PageContainer";
 import Link from "next/link";
 import { WelcomeOverlay } from "@/components/shared/WelcomeOverlay";
+import { HotTakesTicker } from "@/components/vote/HotTakesTicker";
 import type { VotePrompt } from "@/lib/types";
 
 export default function VoteFeedPage() {
@@ -87,6 +88,9 @@ export default function VoteFeedPage() {
             Tap to choose. See the verdict.
           </p>
         </div>
+
+        {/* Hot takes ticker */}
+        {!loading && !error && <HotTakesTicker />}
 
         {/* Question of the Day */}
         {!loading && !error && <FeaturedBanner />}
