@@ -3,6 +3,9 @@ import { db } from "@/lib/db";
 import { questions, categories } from "@/lib/db/schema";
 import { eq } from "drizzle-orm";
 
+// Prevent static prerendering — DB is only available at runtime
+export const dynamic = "force-dynamic";
+
 const BASE_URL = "https://who-did-it-best.vercel.app";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
