@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import { impressions } from "@/lib/db/schema";
 import { getSessionId } from "@/lib/session";
+import { rateLimit } from "@/lib/rate-limit";
 import { and, eq } from "drizzle-orm";
 
 export async function POST(request: NextRequest) {
@@ -17,6 +18,14 @@ export async function POST(request: NextRequest) {
     }
 
     const sessionId = await getSessionId();
+
+    const { allowed } = rateLimit(`skip:${sessionId}`, 120, 60_000);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "Too many requests" },
+        { status: 429 }
+      );
+    }
 
     // Upsert impression as "skipped"
     const existing = await db

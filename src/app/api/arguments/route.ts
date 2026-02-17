@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { arguments_, argumentUpvotes, options } from "@/lib/db/schema";
 import { eq, and, sql, desc } from "drizzle-orm";
 import { getSessionId } from "@/lib/session";
+import { rateLimit } from "@/lib/rate-limit";
 
 const MAX_BODY_LENGTH = 280;
 
@@ -80,6 +81,14 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
     const { action } = body;
     const sessionId = await getSessionId();
+
+    const { allowed } = rateLimit(`args:${sessionId}`, 30, 60_000);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "Too many requests" },
+        { status: 429 }
+      );
+    }
 
     if (action === "upvote") {
       // Toggle upvote on an argument

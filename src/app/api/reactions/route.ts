@@ -3,6 +3,7 @@ import { db } from "@/lib/db";
 import { reactions } from "@/lib/db/schema";
 import { eq, and, sql } from "drizzle-orm";
 import { getSessionId } from "@/lib/session";
+import { rateLimit } from "@/lib/rate-limit";
 
 const VALID_EMOJIS = ["fire", "shocked", "fair", "wrong"];
 
@@ -76,6 +77,14 @@ export async function POST(request: NextRequest) {
     }
 
     const sessionId = await getSessionId();
+
+    const { allowed } = rateLimit(`reaction:${sessionId}`, 60, 60_000);
+    if (!allowed) {
+      return NextResponse.json(
+        { error: "Too many requests" },
+        { status: 429 }
+      );
+    }
 
     // Upsert: update if exists, insert if not
     const existing = await db

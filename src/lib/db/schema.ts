@@ -6,6 +6,7 @@ import {
   integer,
   jsonb,
   uniqueIndex,
+  index,
   pgEnum,
 } from "drizzle-orm/pg-core";
 
@@ -26,39 +27,53 @@ export const categories = pgTable("categories", {
     .defaultNow(),
 });
 
-export const questions = pgTable("questions", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  categoryId: uuid("category_id")
-    .notNull()
-    .references(() => categories.id),
-  prompt: text("prompt").notNull(),
-  subtitle: text("subtitle"),
-  status: questionStatusEnum("status").notNull().default("active"),
-  tags: text("tags").array(),
-  totalVotes: integer("total_votes").notNull().default(0),
-  metadata: jsonb("metadata"),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-  updatedAt: timestamp("updated_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const questions = pgTable(
+  "questions",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    categoryId: uuid("category_id")
+      .notNull()
+      .references(() => categories.id),
+    prompt: text("prompt").notNull(),
+    subtitle: text("subtitle"),
+    status: questionStatusEnum("status").notNull().default("active"),
+    tags: text("tags").array(),
+    totalVotes: integer("total_votes").notNull().default(0),
+    metadata: jsonb("metadata"),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("questions_status_idx").on(table.status),
+    index("questions_category_id_idx").on(table.categoryId),
+    index("questions_status_created_idx").on(table.status, table.createdAt),
+  ]
+);
 
-export const options = pgTable("options", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  questionId: uuid("question_id")
-    .notNull()
-    .references(() => questions.id),
-  name: text("name").notNull(),
-  subtitle: text("subtitle"),
-  imageUrl: text("image_url"),
-  sortOrder: integer("sort_order").notNull().default(0),
-  voteCount: integer("vote_count").notNull().default(0),
-  createdAt: timestamp("created_at", { withTimezone: true })
-    .notNull()
-    .defaultNow(),
-});
+export const options = pgTable(
+  "options",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    questionId: uuid("question_id")
+      .notNull()
+      .references(() => questions.id),
+    name: text("name").notNull(),
+    subtitle: text("subtitle"),
+    imageUrl: text("image_url"),
+    sortOrder: integer("sort_order").notNull().default(0),
+    voteCount: integer("vote_count").notNull().default(0),
+    createdAt: timestamp("created_at", { withTimezone: true })
+      .notNull()
+      .defaultNow(),
+  },
+  (table) => [
+    index("options_question_id_idx").on(table.questionId),
+  ]
+);
 
 export const votes = pgTable(
   "votes",
@@ -81,6 +96,9 @@ export const votes = pgTable(
       .on(table.questionId, table.userId),
     uniqueIndex("votes_question_session_idx")
       .on(table.questionId, table.sessionId),
+    index("votes_session_id_idx").on(table.sessionId),
+    index("votes_question_id_idx").on(table.questionId),
+    index("votes_created_at_idx").on(table.createdAt),
   ]
 );
 
@@ -96,22 +114,32 @@ export const users = pgTable("users", {
     .defaultNow(),
 });
 
-export const accounts = pgTable("accounts", {
-  id: uuid("id").primaryKey().defaultRandom(),
-  userId: uuid("user_id")
-    .notNull()
-    .references(() => users.id, { onDelete: "cascade" }),
-  type: text("type").notNull(),
-  provider: text("provider").notNull(),
-  providerAccountId: text("provider_account_id").notNull(),
-  refresh_token: text("refresh_token"),
-  access_token: text("access_token"),
-  expires_at: integer("expires_at"),
-  token_type: text("token_type"),
-  scope: text("scope"),
-  id_token: text("id_token"),
-  session_state: text("session_state"),
-});
+export const accounts = pgTable(
+  "accounts",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => users.id, { onDelete: "cascade" }),
+    type: text("type").notNull(),
+    provider: text("provider").notNull(),
+    providerAccountId: text("provider_account_id").notNull(),
+    refresh_token: text("refresh_token"),
+    access_token: text("access_token"),
+    expires_at: integer("expires_at"),
+    token_type: text("token_type"),
+    scope: text("scope"),
+    id_token: text("id_token"),
+    session_state: text("session_state"),
+  },
+  (table) => [
+    uniqueIndex("accounts_provider_account_idx").on(
+      table.provider,
+      table.providerAccountId
+    ),
+    index("accounts_user_id_idx").on(table.userId),
+  ]
+);
 
 export const sessions = pgTable("sessions", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -139,6 +167,8 @@ export const impressions = pgTable(
   (table) => [
     uniqueIndex("impressions_question_session_idx")
       .on(table.questionId, table.sessionId),
+    index("impressions_session_id_idx").on(table.sessionId),
+    index("impressions_session_action_idx").on(table.sessionId, table.action),
   ]
 );
 
@@ -160,6 +190,7 @@ export const reactions = pgTable(
       table.questionId,
       table.sessionId
     ),
+    index("reactions_question_id_idx").on(table.questionId),
   ]
 );
 
@@ -185,6 +216,7 @@ export const arguments_ = pgTable(
       table.questionId,
       table.sessionId
     ),
+    index("arguments_question_id_idx").on(table.questionId),
   ]
 );
 

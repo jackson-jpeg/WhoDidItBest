@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import {
   playfairDisplay,
   sourceSerif4,
@@ -7,6 +7,12 @@ import {
 } from "./fonts";
 import { ToastProvider } from "@/components/ui/Toast";
 import "./globals.css";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#F5F0E8",
+};
 
 export const metadata: Metadata = {
   title: {
